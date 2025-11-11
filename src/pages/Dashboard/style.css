@@ -1,0 +1,340 @@
+/*
+Colores: 
+
+#27F5F1	Titulos
+#2776F5	Botones principales
+#27F5AD	Estado activo
+#2735F5	Badges de Admin
+
+#78CFF5 Texto secundario
+#2787F5 Variaciones
+
+#181e2c gris azul
+
+#96b2e7 texto blancos
+
+*/
+
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.Dashboard {
+  position: relative;
+  width: 100%;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background-color: #000000;
+  min-height: 100vh;
+
+}
+
+.Dashboard-Contenedor{
+  position: relative;
+  top: 60px;
+  left: 5%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 50px;
+  max-width: 1000px;
+  gap: 15px;
+}
+
+/*Usuarios*/
+
+.Dashboard-sup{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 0 40px;
+  margin-top: -27px;
+  border-bottom: 1px solid #27F5F1;
+  padding-bottom: 20px;
+  margin-bottom: 10px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.Dashboard-titulo{
+  display: flex;
+  flex-direction: column;
+
+}
+
+.Dashboard-sup h1{
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.Dashboard-sup .sup{
+  position: absolute;
+  top: 35px;
+  left: 0;
+  font-size: 10px;
+  color: #8d8686;
+  margin-top: -10px;
+}
+
+/*Dashboard informacion*/
+.Dashboard-sub{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.Dashboard-sub h1{
+  margin: 0;
+  color: #2776F5;
+  font-size: 1.5rem;
+}
+
+.Dashboard-sub .sub{
+  font-size: 10px;
+  color: #8d8686;
+  margin-top: -10px;
+}
+
+/*Tarjetas usuarios*/
+.Cartas-U{
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  background-color: #0f1e3b;
+  border-radius: 10px;
+  border: 1px solid #27F5F1;
+  padding: 15px;
+  margin-top: 15px;
+  transition: transform 0.2s ease;
+  width: 100vh; 
+}
+
+.Cartas-U:hover {
+  transform: scale(1.05);
+}
+
+.Avatar {
+  background-color: #2776F5;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  color: #eeeeee;
+}
+
+.Datos{
+  flex: 1;
+  margin-left: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.Datos h3{
+  margin: 0;
+  color: #5e6876;
+  font-size: 15px;
+}
+
+.Datos p{
+  margin: 2px 0 0;
+  color: #5e6876;
+  font-size: 10px;
+}
+
+.usuarios-totales{
+  color: #194dae;
+}
+
+.Nuevos-usuarios h3{
+  margin: 2px 0 0;
+  color: #27F5AD;
+  font-size: 10px;
+}
+
+/*Tarjetas Jugadores*/
+.Cartas-J{
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  background-color: #0f3236;
+  border-radius: 10px;
+  border: 1px solid #27F5F1;
+  padding: 15px;
+  margin-top: 15px;
+  transition: transform 0.2s ease;
+  width: 100vh; 
+}
+
+.usuarios-totales-j{
+  color: #2bd7a1;
+}
+
+.Avatar-badget{
+  background-color: #2bd7a1;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  color: #0f3236;
+}
+
+/*Tarjeta liga*/
+.Cartas-L{
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  background-color: #0f1e3b;
+  border-radius: 10px;
+  border: 1px solid #27F5F1;
+  padding: 15px;
+  margin-top: 15px;
+  transition: transform 0.2s ease;
+  width: 100vh;
+}
+
+.usuarios-totales-l{
+  color: #194dae;
+}
+
+.Liga {
+  background-color: #2776F5;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  color: #eeeeee;
+}
+
+.Cartas-M{
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  background-color: #0f3236;
+  border-radius: 10px;
+  border: 1px solid #27F5F1;
+  padding: 15px;
+  margin-top: 15px;
+  transition: transform 0.2s ease;
+  width: 100vh; 
+}
+
+.usuarios-totales-m{
+  color: #2bd7a1;
+}
+
+.Analitica{
+  background-color: #2bd7a1;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  color: #0f3236;
+}
+
+.Cartas-A{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #1d2437;
+  border-radius: 10px;
+  border: 1px solid #27F5F1;
+  padding: 15px;
+  margin-top: 15px;
+  transition: transform 0.2s ease;
+  width: 100vh; 
+}
+
+.Actividad-R{
+  color: #eeeeee;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.usuarios{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-radius: 10px;
+  transition: transform 0.2s ease;
+  background-color: #242a3a;
+}
+
+.usuarios:hover{
+  transform: scale(1.05);
+}
+
+.estado{
+  width: 8px;
+  height: 8px;
+  border-radius: 50px;
+}
+
+.Cartas-Top{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #1d2437;
+  border-radius: 10px;
+  border: 1px solid #27F5F1;
+  padding: 15px;
+  margin-top: 15px;
+  transition: transform 0.2s ease;
+  width: 100vh; 
+}
+
+.Actividad-Mejores-Jugadores{
+  color: #eeeeee;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.usuarios{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-radius: 10px;
+  transition: transform 0.2s ease;
+  background-color: #242a3a;
+}
+
+.Cartas-J:hover {
+  transform: scale(1.05);
+}
+.Cartas-L:hover {
+  transform: scale(1.05);
+}
+.Cartas-M:hover {
+  transform: scale(1.05);
+}

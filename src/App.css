@@ -1,0 +1,142 @@
+/*
+Colores: 
+
+#27F5F1	Titulos
+#2776F5	Botones principales
+#27F5AD	Estado activo
+#2735F5	Badges de Admin
+
+#78CFF5 Texto secundario
+#2787F5 Variaciones
+
+#181e2c gris azul
+
+#96b2e7 texto blancos
+
+*/
+
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  background-color: #000000;
+}
+
+.body{
+ background-color: #000000;
+}
+
+/*Tres lienas*/
+.Tres-lineas {
+ position: relative;
+ width: 30px;
+ height: 30px;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ padding: 5px;
+ border-radius: 5px;
+ border: solid 1px transparent;
+ transition: all 0.3s ease;
+}
+
+.Tres-lineas:hover{
+  border-color: #27F5F1;
+  background-color: #2735F5;
+}
+
+.Tres-lineas svg{
+  color: #27F5F1;
+  transition: color 0.2s ease;
+}
+
+.Tres-lineas:hover svg{
+  color: #27F5F1;
+  transform: scale(1.1);
+}
+
+/* Separador linea*/
+
+.separador{
+  background-color: #27F5F1;
+  height: 1px;
+  width: 100%;
+  margin: -30px 0;
+}
+
+
+/* Nav */
+.Nav {
+  padding-bottom: 60px;
+}
+
+.Botones {
+  background-color: #000000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 4%;
+  border-right: 1px solid #27F5F1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 10px 0;
+  z-index: 1000;
+  gap: 12px;
+}
+
+.Boton-link{
+  text-decoration: none;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  justify-content: center;
+  color: #2776F5;
+  font-size: 10px;
+}
+
+
+/* iconos Nav */
+.Boton-icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border: solid 1px transparent;
+  border-radius: 5px;
+}
+
+.Boton-icon svg{
+  color: #27F5F1;
+  transition: color 0.2s ease;
+}
+
+.Boton-link.active .Boton-icon .Tres-lineas.active svg {
+  color: #2776F5;
+}
+
+.Boton-link:hover .Boton-icon {
+  border-color: #2776F5;
+}
+
+.Boton-link:hover .Boton-icon svg{
+ color: #2776F5;
+ transform: scale(1.1);
+}
+
+
+/* Responsive */
+@media (max-width: 600px){
+  .Boton-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
