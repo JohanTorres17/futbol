@@ -31,16 +31,24 @@ function Liga () {
       inscripcion: 'Inscripción'
     }
   ]);
+  const [editingId, setEditingId] = useState(null);
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
 
-  const openModal = () => {
-    console.log('openModal llamado'); // <-- depuración
-    setForm({
-      nombre: '',
-      fechaInicio: '',
-      fechaFin: '',
-      equipos: '',
-      premio: ''
-    });
+  const openModal = (liga = null) => {
+    // si se pasa una liga, entramos en modo edición
+    if (liga) {
+      setForm({
+        nombre: liga.nombre || '',
+        fechaInicio: liga.fechaInicio || '',
+        fechaFin: liga.fechaFin || '',
+        equipos: liga.equipos || '',
+        premio: liga.premio || ''
+      });
+      setEditingId(liga.id);
+    } else {
+      setForm({ nombre: '', fechaInicio: '', fechaFin: '', equipos: '', premio: '' });
+      setEditingId(null);
+    }
     setShowModal(true);
   };
 
@@ -62,23 +70,41 @@ function Liga () {
       alert('La fecha de inicio no puede ser posterior a la fecha fin.');
       return;
     }
-    const nuevaLiga = {
-      id: Date.now(),
-      nombre: form.nombre,
-      fechaInicio: form.fechaInicio,
-      fechaFin: form.fechaFin,
-      equipos: Number(form.equipos),
-      premio: form.premio,
-      tipo: 'Torneo',
-      inscripcion: 'Inscripción'
-    };
-    setLigas(prev => [nuevaLiga, ...prev]);
+    if (editingId) {
+      // actualizar liga existente
+      setLigas(prev => prev.map(l => l.id === editingId ? ({
+        ...l,
+        nombre: form.nombre,
+        fechaInicio: form.fechaInicio,
+        fechaFin: form.fechaFin,
+        equipos: Number(form.equipos),
+        premio: form.premio
+      }) : l));
+      setEditingId(null);
+    } else {
+      const nuevaLiga = {
+        id: Date.now(),
+        nombre: form.nombre,
+        fechaInicio: form.fechaInicio,
+        fechaFin: form.fechaFin,
+        equipos: Number(form.equipos),
+        premio: form.premio,
+        tipo: 'Torneo',
+        inscripcion: 'Inscripción'
+      };
+      setLigas(prev => [nuevaLiga, ...prev]);
+    }
     setShowModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (!confirm('¿Eliminar esta liga?')) return;
+  const handleDelete = (liga) => {
+    // abrir modal de confirmación
+    setDeleteCandidate({ id: liga.id, nombre: liga.nombre });
+  };
+
+  const handleDeleteConfirmed = (id) => {
     setLigas(prev => prev.filter(l => l.id !== id));
+    setDeleteCandidate(null);
   };
 
   return (
@@ -131,8 +157,8 @@ function Liga () {
                     <h4 className='incripcion'>{liga.inscripcion}</h4>
                   </div>
                   <div className='Botones-Cartas'>
-                    <button type="button" className='editar'><HiOutlinePencil /> Editar </button>
-                    <button type="button" className='basura' onClick={() => handleDelete(liga.id)}><HiTrash /></button>
+                    <button type="button" className='editar' onClick={() => openModal(liga)}><HiOutlinePencil /> Editar </button>
+                    <button type="button" className='basura' onClick={() => handleDelete(liga)}><HiTrash /></button>
                   </div>
                 </div>
               </div>
@@ -147,7 +173,7 @@ function Liga () {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Crear nueva liga</h2>
+              <h2>{editingId ? 'Editar liga' : 'Crear nueva liga'}</h2>
               <button type="button" className="modal-close" onClick={closeModal} aria-label="Cerrar modal">✕</button>
             </div>
             <form onSubmit={handleSubmit} className="form-modal">
@@ -205,9 +231,27 @@ function Liga () {
 
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={closeModal}>Cancelar</button>
-                <button type="submit" className="btn-submit">Crear liga</button>
+                <button type="submit" className="btn-submit">{editingId ? 'Guardar cambios' : 'Crear liga'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación para borrar */}
+      {deleteCandidate && (
+        <div className="modal-overlay" onClick={() => setDeleteCandidate(null)}>
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirmar eliminación</h2>
+            </div>
+            <div style={{padding: '1rem'}}>
+              <p>¿Estás seguro que deseas eliminar <strong>{deleteCandidate.nombre}</strong>?</p>
+              <div style={{display: 'flex', gap: '0.5rem', justifyContent: 'flex-end'}}>
+                <button type="button" className="btn-cancel" onClick={() => setDeleteCandidate(null)}>Cancelar</button>
+                <button type="button" className="btn-submit" onClick={() => handleDeleteConfirmed(deleteCandidate.id)}>Eliminar</button>
+              </div>
+            </div>
           </div>
         </div>
       )}

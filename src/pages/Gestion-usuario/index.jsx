@@ -6,44 +6,55 @@ import './style.css'
 
 
 function Gestion_usuario () {
-     const [showModal, setShowModal] = useState(false);
-     const [form, setForm] = useState({ nombre: '', email: '', role: 'Admin' });
-     const [users, setUsers] = useState([
-        { id: 1, nombre: 'Admin Demo', email: 'admin@demo.com', role: 'Admin', activo: true }
-     ]);
+    const [showModal, setShowModal] = useState(false);
+    const [form, setForm] = useState({ nombre: '', email: '', role: 'Admin' });
+    const [users, setUsers] = useState([
+      { id: 1, nombre: 'Admin Demo', email: 'admin@demo.com', role: 'Admin', activo: true }
+    ]);
+    const [editingId, setEditingId] = useState(null);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
 
-     const openModal = () => {
+    const openModal = (user = null) => {
+      if (user) {
+        setForm({ nombre: user.nombre || '', email: user.email || '', role: user.role || 'Admin' });
+        setEditingId(user.id);
+      } else {
         setForm({ nombre: '', email: '', role: 'Admin' });
-        setShowModal(true);
-     };
-     const closeModal = () => setShowModal(false);
+        setEditingId(null);
+      }
+      setShowModal(true);
+    };
+    const closeModal = () => { setShowModal(false); setEditingId(null); };
 
-     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
-     };
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setForm(prev => ({ ...prev, [name]: value }));
+    };
 
-     const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!form.nombre || !form.email) {
-           alert('Por favor completa todos los campos.');
-           return;
-        }
-        const nuevo = {
-           id: Date.now(),
-           nombre: form.nombre,
-           email: form.email,
-           role: form.role,
-           activo: true
-        };
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (!form.nombre || !form.email) {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+      if (editingId) {
+        setUsers(prev => prev.map(u => u.id === editingId ? ({ ...u, nombre: form.nombre, email: form.email, role: form.role }) : u));
+        setEditingId(null);
+      } else {
+        const nuevo = { id: Date.now(), nombre: form.nombre, email: form.email, role: form.role, activo: true };
         setUsers(prev => [nuevo, ...prev]);
-        setShowModal(false);
-     };
+      }
+      setShowModal(false);
+    };
 
-     const handleDelete = (id) => {
-        if (!confirm('¿Eliminar este usuario?')) return;
-        setUsers(prev => prev.filter(u => u.id !== id));
-     };
+    const handleDeleteConfirmed = (id) => {
+      setUsers(prev => prev.filter(u => u.id !== id));
+      setDeleteCandidate(null);
+    };
+
+    const handleDelete = (user) => {
+      setDeleteCandidate({ id: user.id, nombre: user.nombre });
+    };
 
      return(
         <>
@@ -90,8 +101,8 @@ function Gestion_usuario () {
                  </div>
                  <p>Ultima actividad: --</p>
                  <div className='Botones-Cartas'> 
-                   <button className='editar'><HiOutlinePencil /> Editar </button>
-                   <button className='basura' onClick={() => handleDelete(user.id)}><HiTrash /></button>
+                   <button className='editar' onClick={() => openModal(user)}><HiOutlinePencil /> Editar </button>
+                   <button className='basura' onClick={() => handleDelete(user)}><HiTrash /></button>
                  </div>
                </div>
              </div>
@@ -105,7 +116,7 @@ function Gestion_usuario () {
      <div className="modal-overlay" onClick={closeModal}>
        <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
          <div className="modal-header">
-           <h2>Crear nuevo usuario (Admin)</h2>
+           <h2>{editingId ? 'Editar usuario (Admin)' : 'Crear nuevo usuario (Admin)'}</h2>
            <button type="button" className="modal-close" onClick={closeModal} aria-label="Cerrar modal">✕</button>
          </div>
          <form onSubmit={handleSubmit} className="form-modal">
@@ -126,9 +137,27 @@ function Gestion_usuario () {
            </div>
            <div className="modal-actions">
              <button type="button" className="btn-cancel" onClick={closeModal}>Cancelar</button>
-             <button type="submit" className="btn-submit">Crear usuario</button>
+             <button type="submit" className="btn-submit">{editingId ? 'Guardar cambios' : 'Crear usuario'}</button>
            </div>
          </form>
+       </div>
+     </div>
+   )}
+
+   {/* Modal de confirmación para borrar usuario */}
+   {deleteCandidate && (
+     <div className="modal-overlay" onClick={() => setDeleteCandidate(null)}>
+       <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+         <div className="modal-header">
+           <h2>Confirmar eliminación</h2>
+         </div>
+         <div style={{padding: '1rem'}}>
+           <p>¿Estás seguro que deseas eliminar <strong>{deleteCandidate.nombre}</strong>?</p>
+           <div style={{display: 'flex', gap: '0.5rem', justifyContent: 'flex-end'}}>
+             <button type="button" className="btn-cancel" onClick={() => setDeleteCandidate(null)}>Cancelar</button>
+             <button type="button" className="btn-submit" onClick={() => handleDeleteConfirmed(deleteCandidate.id)}>Eliminar</button>
+           </div>
+         </div>
        </div>
      </div>
    )}

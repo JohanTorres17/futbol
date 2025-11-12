@@ -11,12 +11,30 @@ function Gestion_jugador () {
      const [jugadores, setJugadores] = useState([
         { id: 1, nombre: 'Lionel Messi', posicion: 'Delantero', edad: 36, estadisticas: 'Goles: 2', equipo: 'FC Barcelona', precio: '$50,000,000', activo: true }
      ]);
+     const [editingId, setEditingId] = useState(null);
+     const [deleteCandidate, setDeleteCandidate] = useState(null); // { id, nombre }
 
-     const openModal = () => {
-        setForm({ nombre: '', posicion: '', edad: '', estadisticas: '', equipo: '', precio: '' });
+     const openModal = (jugador = null) => {
+        if (jugador) {
+           setForm({
+             nombre: jugador.nombre || '',
+             posicion: jugador.posicion || '',
+             edad: jugador.edad || '',
+             estadisticas: jugador.estadisticas || '',
+             equipo: jugador.equipo || '',
+             precio: jugador.precio || ''
+           });
+           setEditingId(jugador.id);
+        } else {
+           setForm({ nombre: '', posicion: '', edad: '', estadisticas: '', equipo: '', precio: '' });
+           setEditingId(null);
+        }
         setShowModal(true);
      };
-     const closeModal = () => setShowModal(false);
+     const closeModal = () => {
+        setShowModal(false);
+        setEditingId(null);
+     };
 
      const handleChange = (e) => {
         const { name, value } = e.target;
@@ -29,23 +47,43 @@ function Gestion_jugador () {
            alert('Por favor completa los campos obligatorios.');
            return;
         }
-        const nuevo = {
-           id: Date.now(),
-           nombre: form.nombre,
-           posicion: form.posicion,
-           edad: Number(form.edad),
-           estadisticas: form.estadisticas,
-           equipo: form.equipo,
-           precio: form.precio,
-           activo: true
-        };
-        setJugadores(prev => [nuevo, ...prev]);
+        if (editingId) {
+           // actualizar
+           setJugadores(prev => prev.map(j => j.id === editingId ? ({
+             ...j,
+             nombre: form.nombre,
+             posicion: form.posicion,
+             edad: Number(form.edad),
+             estadisticas: form.estadisticas,
+             equipo: form.equipo,
+             precio: form.precio
+           }) : j));
+           setEditingId(null);
+        } else {
+           // crear
+           const nuevo = {
+              id: Date.now(),
+              nombre: form.nombre,
+              posicion: form.posicion,
+              edad: Number(form.edad),
+              estadisticas: form.estadisticas,
+              equipo: form.equipo,
+              precio: form.precio,
+              activo: true
+           };
+           setJugadores(prev => [nuevo, ...prev]);
+        }
         setShowModal(false);
      };
 
-     const handleDelete = (id) => {
-        if (!confirm('¿Eliminar este jugador?')) return;
+     const handleDeleteConfirmed = (id) => {
         setJugadores(prev => prev.filter(j => j.id !== id));
+        setDeleteCandidate(null);
+     };
+
+     const handleDelete = (j) => {
+        // abrir modal de confirmación, no usar confirm()
+        setDeleteCandidate({ id: j.id, nombre: j.nombre });
      };
 
      return(
@@ -81,26 +119,26 @@ function Gestion_jugador () {
         </div>
 
             <div className='Cartas-List'>
-               {jugadores.map(j => (
-                 <div className='Cartas-U' key={j.id}>
-                   <div className='Avatar'>{j.nombre.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
-                   <div className='Datos'>
-                     <h3>{j.nombre}</h3>
-                     <p>{j.equipo}</p>
-                     <p>{j.edad}</p>
-                     <div className='Actividad'>
-                        <h4 className='rol'><RiTShirtLine />  {j.posicion}</h4>
-                        <h4 className='Tiempo-activo'>{j.activo ? 'Activo' : 'Inactivo'}</h4>
-                     </div>
-                     <p>{j.estadisticas}</p>
-                     <p>Precio: {j.precio}</p>
-                     <div className='Botones-Cartas'> 
-                        <button className='editar'><HiOutlinePencil /> Editar </button>
-                        <button className='basura' onClick={() => handleDelete(j.id)}><HiTrash /></button>
-                     </div>
-                   </div>
-                 </div>
-               ))}
+                      {jugadores.map(j => (
+                         <div className='Cartas-U' key={j.id}>
+                            <div className='Avatar'>{j.nombre.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+                            <div className='Datos'>
+                               <h3>{j.nombre}</h3>
+                               <p>{j.equipo}</p>
+                               <p>{j.edad}</p>
+                               <div className='Actividad'>
+                                    <h4 className='rol'><RiTShirtLine />  {j.posicion}</h4>
+                                    <h4 className='Tiempo-activo'>{j.activo ? 'Activo' : 'Inactivo'}</h4>
+                               </div>
+                               <p>{j.estadisticas}</p>
+                               <p>Precio: {j.precio}</p>
+                               <div className='Botones-Cartas'> 
+                                    <button className='editar' onClick={() => openModal(j)}><HiOutlinePencil /> Editar </button>
+                                    <button className='basura' onClick={() => handleDelete(j)}><HiTrash /></button>
+                               </div>
+                            </div>
+                         </div>
+                      ))}
             </div>
 
       </div> 
@@ -110,7 +148,7 @@ function Gestion_jugador () {
      <div className="modal-overlay" onClick={closeModal}>
        <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
          <div className="modal-header">
-           <h2>Crear nuevo jugador</h2>
+                  <h2>{editingId ? 'Editar jugador' : 'Crear nuevo jugador'}</h2>
            <button type="button" className="modal-close" onClick={closeModal} aria-label="Cerrar modal">✕</button>
          </div>
          <form onSubmit={handleSubmit} className="form-modal">
@@ -140,12 +178,30 @@ function Gestion_jugador () {
            </div>
            <div className="modal-actions">
              <button type="button" className="btn-cancel" onClick={closeModal}>Cancelar</button>
-             <button type="submit" className="btn-submit">Crear jugador</button>
+                   <button type="submit" className="btn-submit">{editingId ? 'Guardar cambios' : 'Crear jugador'}</button>
            </div>
          </form>
        </div>
      </div>
    )}
+
+      {/* Modal de confirmación para borrar */}
+      {deleteCandidate && (
+         <div className="modal-overlay" onClick={() => setDeleteCandidate(null)}>
+            <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+               <div className="modal-header">
+                  <h2>Confirmar eliminación</h2>
+               </div>
+               <div style={{padding: '1rem'}}>
+                  <p>¿Estás seguro que deseas eliminar <strong>{deleteCandidate.nombre}</strong>?</p>
+                  <div style={{display: 'flex', gap: '0.5rem', justifyContent: 'flex-end'}}>
+                     <button type="button" className="btn-cancel" onClick={() => setDeleteCandidate(null)}>Cancelar</button>
+                     <button type="button" className="btn-submit" onClick={() => handleDeleteConfirmed(deleteCandidate.id)}>Eliminar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      )}
 
    </>
      )
