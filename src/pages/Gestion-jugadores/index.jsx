@@ -6,6 +6,48 @@ import { RiTShirtLine } from "react-icons/ri";
 import './style.css'
 
 function Gestion_jugador () {
+     const [showModal, setShowModal] = useState(false);
+     const [form, setForm] = useState({ nombre: '', posicion: '', edad: '', estadisticas: '', equipo: '', precio: '' });
+     const [jugadores, setJugadores] = useState([
+        { id: 1, nombre: 'Lionel Messi', posicion: 'Delantero', edad: 36, estadisticas: 'Goles: 2', equipo: 'FC Barcelona', precio: '$50,000,000', activo: true }
+     ]);
+
+     const openModal = () => {
+        setForm({ nombre: '', posicion: '', edad: '', estadisticas: '', equipo: '', precio: '' });
+        setShowModal(true);
+     };
+     const closeModal = () => setShowModal(false);
+
+     const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+     };
+
+     const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!form.nombre || !form.posicion || !form.edad || !form.equipo) {
+           alert('Por favor completa los campos obligatorios.');
+           return;
+        }
+        const nuevo = {
+           id: Date.now(),
+           nombre: form.nombre,
+           posicion: form.posicion,
+           edad: Number(form.edad),
+           estadisticas: form.estadisticas,
+           equipo: form.equipo,
+           precio: form.precio,
+           activo: true
+        };
+        setJugadores(prev => [nuevo, ...prev]);
+        setShowModal(false);
+     };
+
+     const handleDelete = (id) => {
+        if (!confirm('¿Eliminar este jugador?')) return;
+        setJugadores(prev => prev.filter(j => j.id !== id));
+     };
+
      return(
         <>
    <div className='Gestion_jugadores'> 
@@ -18,7 +60,7 @@ function Gestion_jugador () {
             </div>
 
             <div className='Boton-Nuevo'>
-               <button> + Crear Nuevo</button>
+               <button type="button" onClick={openModal}> + Crear Nuevo</button>
             </div>  
          </div>
 
@@ -27,7 +69,7 @@ function Gestion_jugador () {
             <h4 className='sub'>Administra todos los jugadores registrados </h4>
 
             <div className='Boton-Jugador'>
-               <button> + Nuevo Jugador</button>
+               <button type="button" onClick={openModal}> + Nuevo Jugador</button>
             </div>   
         </div>
 
@@ -38,25 +80,73 @@ function Gestion_jugador () {
          />
         </div>
 
-            <div className='Cartas-U'>
-               <div className='Avatar'>LM</div>
-                  <div className='Datos'>
-                        <h3>Lionel Messi</h3>
-                        <p>FC Barcelona</p>
-                        <p>36</p>
+            <div className='Cartas-List'>
+               {jugadores.map(j => (
+                 <div className='Cartas-U' key={j.id}>
+                   <div className='Avatar'>{j.nombre.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+                   <div className='Datos'>
+                     <h3>{j.nombre}</h3>
+                     <p>{j.equipo}</p>
+                     <p>{j.edad}</p>
                      <div className='Actividad'>
-                        <h4 className='rol'><RiTShirtLine />  Delantero</h4>
-                        <h4 className='Tiempo-activo'>Activo</h4>
+                        <h4 className='rol'><RiTShirtLine />  {j.posicion}</h4>
+                        <h4 className='Tiempo-activo'>{j.activo ? 'Activo' : 'Inactivo'}</h4>
                      </div>
+                     <p>{j.estadisticas}</p>
+                     <p>Precio: {j.precio}</p>
                      <div className='Botones-Cartas'> 
                         <button className='editar'><HiOutlinePencil /> Editar </button>
-                        <button className='basura'><HiTrash /></button>
+                        <button className='basura' onClick={() => handleDelete(j.id)}><HiTrash /></button>
                      </div>
-                  </div>
+                   </div>
+                 </div>
+               ))}
             </div>
 
       </div> 
    </div>
+
+   {showModal && (
+     <div className="modal-overlay" onClick={closeModal}>
+       <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+         <div className="modal-header">
+           <h2>Crear nuevo jugador</h2>
+           <button type="button" className="modal-close" onClick={closeModal} aria-label="Cerrar modal">✕</button>
+         </div>
+         <form onSubmit={handleSubmit} className="form-modal">
+           <div className="form-row">
+             <label>Nombre</label>
+             <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre completo" />
+           </div>
+           <div className="form-row">
+             <label>Posición</label>
+             <input name="posicion" value={form.posicion} onChange={handleChange} placeholder="Delantero, Defensa..." />
+           </div>
+           <div className="form-row">
+             <label>Edad</label>
+             <input name="edad" type="number" min="1" value={form.edad} onChange={handleChange} placeholder="e.g. 25" />
+           </div>
+           <div className="form-row">
+             <label>Estadísticas</label>
+             <input name="estadisticas" value={form.estadisticas} onChange={handleChange} placeholder="Goles, asistencias..." />
+           </div>
+           <div className="form-row">
+             <label>Equipo</label>
+             <input name="equipo" value={form.equipo} onChange={handleChange} placeholder="Equipo actual" />
+           </div>
+           <div className="form-row">
+             <label>Precio</label>
+             <input name="precio" value={form.precio} onChange={handleChange} placeholder="$1,000,000" />
+           </div>
+           <div className="modal-actions">
+             <button type="button" className="btn-cancel" onClick={closeModal}>Cancelar</button>
+             <button type="submit" className="btn-submit">Crear jugador</button>
+           </div>
+         </form>
+       </div>
+     </div>
+   )}
+
    </>
      )
 }
