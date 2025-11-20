@@ -23,7 +23,6 @@ import Dashboard from './pages/Dashboard/index'
 import Gestion_usuario from'./pages/Gestion-usuario/index'
 import Gestion_jugador from './pages/Gestion-jugadores/index'
 import Liga from './pages/Liga/index'
-import Analitica from './pages/Analitica/index'
 import Configuracion from './pages/Configuracion/index'
 
 import './App.css'
@@ -67,12 +66,6 @@ function Nav (){
           {location.pathname === "/liga" ? <BsTrophyFill size={25} /> : <BsTrophy size={25} />}
         </div>  
       </Link>
-      
-      <Link to="/analitica" className={`Boton-link ${location.pathname === "/analitica" ? "active" : ""}`}>
-        <div className='Boton-icon'>
-          <IoMdAnalytics size={25} className='icon-analitica'/>
-        </div>    
-      </Link>
 
       <Link to="/configuracion" className={`Boton-link ${location.pathname === "/configuracion" ? "active" : ""}`}>
         <div className='Boton-icon'>
@@ -101,7 +94,6 @@ function App() {
           <Route path="/gestion-usuario" element={<Gestion_usuario />} />
           <Route path="/gestion-jugador" element={<Gestion_jugador />} />
           <Route path="/liga" element={<Liga />} />
-          <Route path="/analitica" element={<Analitica />} />
           <Route path="/configuracion" element={<Configuracion />} />
 
           <Route path='*' element={<Dashboard />} />

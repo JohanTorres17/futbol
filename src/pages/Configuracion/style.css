@@ -1,0 +1,157 @@
+
+.config-page{
+	display: flex;
+	gap: 24px;
+	padding: 300px 100px; /* reducir espacio arriba/abajo */
+	box-sizing: border-box;
+	align-items: flex-start; /* pegar al top */
+	background-color: #000; /* match Dashboard background */
+}
+
+.config-menu{
+	width: 220px;
+	border-right: 1px solid rgba(255,255,255,0.05);
+	padding-right: 16px;
+}
+
+.config-menu h2{
+	margin: 0 0 12px 0;
+	font-size: 18px;
+	color: #27F5F1; /* dashboard title color */
+}
+
+.config-menu ul{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.config-menu li{
+	margin-bottom: 8px;
+}
+
+.config-menu button{
+	width: 100%;
+	text-align: left;
+	padding: 8px 10px;
+	border: none;
+	background: transparent;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.config-menu button:hover{
+	background: #f5f5f5;
+}
+
+.config-menu button.active{
+	background: #0b5fff22;
+	color: #0b5fff;
+	font-weight: 600;
+}
+
+.config-content{
+	flex: 1;
+	padding: 12px 24px; /* menos padding vertical */
+	min-height: auto; /* evitar huecos grandes */
+	max-width: 980px;
+	color: #e6eef8; /* light text like dashboard */
+}
+
+.config-content h3{
+	margin-top: 0;
+}
+
+.form-row{
+	margin-bottom: 12px;
+	display: flex;
+	flex-direction: column;
+}
+
+.form-row label{
+	font-size: 13px;
+	margin-bottom: 6px;
+}
+
+.form-row input[type="text"], .form-row input[type="email"], .form-row input[type="password"], .form-row input{
+	padding: 10px 12px;
+	border: 1px solid rgba(39,118,245,0.12); /* subtle blue border */
+	background: #0f1e3b; /* dashboard card bg */
+	color: #e6eef8;
+	border-radius: 8px;
+}
+
+.checkbox-row label{
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.form-actions{
+	margin-top: 16px;
+}
+
+.form-actions button{
+	padding: 10px 16px;
+	border-radius: 8px;
+	border: none;
+	background: #2776F5; /* dashboard primary button */
+	color: #fff;
+	cursor: pointer;
+	font-weight: 700;
+	box-shadow: 0 6px 18px rgba(39,118,245,0.18);
+}
+.form-actions button:hover{ transform: translateY(-1px); opacity:0.95 }
+
+.placeholder{
+	padding: 12px;
+	background: #0f1e3b; /* card bg like dashboard */
+	border-radius: 8px;
+	border: 1px solid rgba(39,245,241,0.03);
+}
+
+@media (max-width: 920px){
+	.config-page{flex-direction:column; align-items: stretch}
+	.config-menu{width:100%; border-right: none; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:12px}
+	.config-content{max-width:100%; padding:18px}
+}
+
+@media (max-width: 420px){
+	.profile-card{flex-direction:row; gap:12px;padding:14px}
+	.avatar{width:64px;height:64px}
+	.profile-info h3{font-size:16px}
+}
+
+/* Estilos para el panel de perfil simple */
+.profile-card{
+	display:flex;
+	gap:18px;
+	align-items:center;
+	background-color: #0f1e3b; /* dashboard card bg */
+	padding:18px;
+	border-radius:10px;
+	max-width:820px;
+	border: 1px solid rgba(39,245,241,0.06);
+}
+.avatar{
+	width:88px;
+	height:88px;
+	border-radius:50%;
+	background:#2776F5; /* dashboard avatar color */
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.initials{font-size:36px;font-weight:800;color:#fff}
+.profile-info h3{margin:0 0 6px 0;color:#27F5F1}
+.muted{color:#96b2e7;margin:0 0 12px 0}
+
+.config-content{ color: #e6eef8 }
+
+.profile-info p{margin:0}
+
+.profile-card .form-actions{margin-top:10px}
+
+.profile-card .form-actions button{padding:8px 14px; background:#2776F5}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../../Supabase/supabase"; 
+import { supabase } from "../../Supabase/supabase.js"; 
 import { HiOutlinePencil, HiTrash } from "react-icons/hi2";
 import { BsTrophyFill } from "react-icons/bs";
 import { FaLongArrowAltRight } from "react-icons/fa";
