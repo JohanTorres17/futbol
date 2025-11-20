@@ -2,17 +2,42 @@ import { BrowserRouter as Router, Route, Routes, Link, useLocation, Navigate } f
 import { useEffect, useState } from 'react';
 import { HiOutlinePencil, HiTrash } from "react-icons/hi2";
 import { RiTShirtLine } from "react-icons/ri";
+import { supabase } from '../../database/supabase';
 
 import './style.css'
 
 function Gestion_jugador () {
      const [showModal, setShowModal] = useState(false);
      const [form, setForm] = useState({ nombre: '', posicion: '', edad: '', estadisticas: '', equipo: '', precio: '' });
-     const [jugadores, setJugadores] = useState([
-        { id: 1, nombre: 'Lionel Messi', posicion: 'Delantero', edad: 36, estadisticas: 'Goles: 2', equipo: 'FC Barcelona', precio: '$50,000,000', activo: true }
-     ]);
+     const [jugadores, setJugadores] = useState([]);
      const [editingId, setEditingId] = useState(null);
-     const [deleteCandidate, setDeleteCandidate] = useState(null); // { id, nombre }
+     const [deleteCandidate, setDeleteCandidate] = useState(null);
+     const [loading, setLoading] = useState(true);
+     const [error, setError] = useState(null);
+
+     // Cargar jugadores al montar el componente
+     useEffect(() => {
+        fetchJugadores();
+     }, []);
+
+     const fetchJugadores = async () => {
+        try {
+           setLoading(true);
+           const { data, error } = await supabase
+              .from('jugadores')
+              .select('*')
+              .order('created_at', { ascending: false });
+           
+           if (error) throw error;
+           setJugadores(data || []);
+           setError(null);
+        } catch (err) {
+           setError(err.message);
+           console.error('Error cargando jugadores:', err);
+        } finally {
+           setLoading(false);
+        }
+     };
 
      const openModal = (jugador = null) => {
         if (jugador) {
@@ -31,6 +56,7 @@ function Gestion_jugador () {
         }
         setShowModal(true);
      };
+
      const closeModal = () => {
         setShowModal(false);
         setEditingId(null);
@@ -41,50 +67,79 @@ function Gestion_jugador () {
         setForm(prev => ({ ...prev, [name]: value }));
      };
 
-     const handleSubmit = (e) => {
+     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.nombre || !form.posicion || !form.edad || !form.equipo) {
            alert('Por favor completa los campos obligatorios.');
            return;
         }
-        if (editingId) {
-           // actualizar
-           setJugadores(prev => prev.map(j => j.id === editingId ? ({
-             ...j,
-             nombre: form.nombre,
-             posicion: form.posicion,
-             edad: Number(form.edad),
-             estadisticas: form.estadisticas,
-             equipo: form.equipo,
-             precio: form.precio
-           }) : j));
+
+        try {
+           if (editingId) {
+              // Actualizar jugador
+              const { error } = await supabase
+                 .from('jugadores')
+                 .update({
+                    nombre: form.nombre,
+                    posicion: form.posicion,
+                    edad: Number(form.edad),
+                    estadisticas: form.estadisticas,
+                    equipo: form.equipo,
+                    precio: form.precio
+                 })
+                 .eq('id', editingId);
+              
+              if (error) throw error;
+              alert('Jugador actualizado correctamente');
+           } else {
+              // Crear nuevo jugador
+              const { error } = await supabase
+                 .from('jugadores')
+                 .insert([{
+                    nombre: form.nombre,
+                    posicion: form.posicion,
+                    edad: Number(form.edad),
+                    estadisticas: form.estadisticas,
+                    equipo: form.equipo,
+                    precio: form.precio,
+                    activo: true
+                 }]);
+              
+              if (error) throw error;
+              alert('Jugador creado correctamente');
+           }
+           
+           setShowModal(false);
            setEditingId(null);
-        } else {
-           // crear
-           const nuevo = {
-              id: Date.now(),
-              nombre: form.nombre,
-              posicion: form.posicion,
-              edad: Number(form.edad),
-              estadisticas: form.estadisticas,
-              equipo: form.equipo,
-              precio: form.precio,
-              activo: true
-           };
-           setJugadores(prev => [nuevo, ...prev]);
+           fetchJugadores(); // Recargar lista
+        } catch (err) {
+           alert('Error: ' + err.message);
+           console.error('Error en handleSubmit:', err);
         }
-        setShowModal(false);
      };
 
-     const handleDeleteConfirmed = (id) => {
-        setJugadores(prev => prev.filter(j => j.id !== id));
-        setDeleteCandidate(null);
+     const handleDeleteConfirmed = async (id) => {
+        try {
+           const { error } = await supabase
+              .from('jugadores')
+              .delete()
+              .eq('id', id);
+           
+           if (error) throw error;
+           alert('Jugador eliminado correctamente');
+           setDeleteCandidate(null);
+           fetchJugadores(); // Recargar lista
+        } catch (err) {
+           alert('Error al eliminar: ' + err.message);
+           console.error('Error en handleDeleteConfirmed:', err);
+        }
      };
 
      const handleDelete = (j) => {
-        // abrir modal de confirmación, no usar confirm()
         setDeleteCandidate({ id: j.id, nombre: j.nombre });
      };
+
+     if (loading) return <div className='Gestion_jugadores'><p>Cargando jugadores...</p></div>;
 
      return(
         <>
@@ -94,7 +149,7 @@ function Gestion_jugador () {
          <div className='Jugadores-sup'>
             <div className='Jugadores'> 
                <h1>Jugadores</h1>
-               <h4 className='sup'>Administra jugadores resgistrados</h4>
+               <h4 className='sup'>Administra jugadores registrados</h4>
             </div>
 
             <div className='Boton-Nuevo'>
@@ -103,8 +158,8 @@ function Gestion_jugador () {
          </div>
 
         <div className='Gestion-jugador'>
-            <h1>Gestión de Jugadors</h1>
-            <h4 className='sub'>Administra todos los jugadores registrados </h4>
+            <h1>Gestión de Jugadores</h1>
+            <h4 className='sub'>Administra todos los jugadores registrados</h4>
 
             <div className='Boton-Jugador'>
                <button type="button" onClick={openModal}> + Nuevo Jugador</button>
@@ -119,7 +174,10 @@ function Gestion_jugador () {
         </div>
 
             <div className='Cartas-List'>
-                      {jugadores.map(j => (
+                      {jugadores.length === 0 ? (
+                        <p>No hay jugadores registrados</p>
+                      ) : (
+                        jugadores.map(j => (
                          <div className='Cartas-U' key={j.id}>
                             <div className='Avatar'>{j.nombre.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
                             <div className='Datos'>
@@ -138,7 +196,8 @@ function Gestion_jugador () {
                                </div>
                             </div>
                          </div>
-                      ))}
+                      ))
+                      )}
             </div>
 
       </div> 
