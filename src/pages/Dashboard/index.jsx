@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, Link, useLocation, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../Supabase/supabase.js';
+import { supabase } from '../../database/supabase.jsx';
 import { HiOutlinePencil, HiTrash } from "react-icons/hi2";
 import { FaUserGroup } from "react-icons/fa6";
 import { SlBadge } from "react-icons/sl";
@@ -19,40 +19,39 @@ function Dashboard () {
                let mounted = true;
                async function fetchCounts(){
                       try{
-                              // ligas table exists in the project
-                              const { count: ligasCnt, error: ligasErr } = await supabase.from('ligas').select('*', { count: 'exact', head: true });
-                              if(ligasErr) console.warn('ligas count error', ligasErr.message);
-                              if(mounted) setLigasCount(Number(ligasCnt) || 0);
+                              // Obtener conteo de ligas
+                              const ligasRes = await supabase.from('ligas').select('id', { count: 'exact', head: true });
+                              if(ligasRes.error) console.warn('ligas count error', ligasRes.error);
+                              if(mounted) setLigasCount(Number(ligasRes.count) || 0);
 
-                              // try jugadores table (may not exist)
-                              const { count: jugadoresCnt, error: jugadoresErr } = await supabase.from('jugadores').select('*', { count: 'exact', head: true });
-                              if(jugadoresErr) {
-                                 // fallback: try 'players'
-                                 const { count: playersCnt, error: playersErr } = await supabase.from('players').select('*', { count: 'exact', head: true });
-                                 if(playersErr) {
-                                    console.warn('jugadores/players count error', jugadoresErr.message, playersErr.message);
-                                    if(mounted) setJugadoresCount(0);
-                                 } else {
-                                    if(mounted) setJugadoresCount(Number(playersCnt) || 0);
-                                 }
+                              // Obtener conteo de jugadores (intentar 'jugadores' luego 'players')
+                              let jugadoresRes = await supabase.from('jugadores').select('id', { count: 'exact', head: true });
+                              if(jugadoresRes.error){
+                                 jugadoresRes = await supabase.from('players').select('id', { count: 'exact', head: true });
+                              }
+                              if(jugadoresRes.error) {
+                                 console.warn('jugadores/players count error', jugadoresRes.error);
+                                 if(mounted) setJugadoresCount(0);
                               } else {
-                                 if(mounted) setJugadoresCount(Number(jugadoresCnt) || 0);
+                                 if(mounted) setJugadoresCount(Number(jugadoresRes.count) || 0);
                               }
 
-                              // try users table
-                              const { count: usersCnt, error: usersErr } = await supabase.from('users').select('*', { count: 'exact', head: true });
-                              if(usersErr) {
-                                 // if no users table, try 'usuarios'
-                                 const { count: usuariosCnt, error: usuariosErr } = await supabase.from('usuarios').select('*', { count: 'exact', head: true });
-                                 if(usuariosErr) {
-                                    console.warn('users/usuarios count error', usersErr.message, usuariosErr.message);
-                                    if(mounted) setUsersCount(0);
-                                 } else {
-                                    if(mounted) setUsersCount(Number(usuariosCnt) || 0);
-                                 }
-                              } else {
-                                 if(mounted) setUsersCount(Number(usersCnt) || 0);
+                              // Obtener conteo de usuarios (intentar 'usuarios' primero)
+                              let usersRes = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
+                              if(usersRes.error){
+                                 // fallback: 'users'
+                                 usersRes = await supabase.from('users').select('id', { count: 'exact', head: true });
                               }
+                              if(usersRes.error){
+                                 console.warn('users/usuarios count error', usersRes.error);
+                                 if(mounted) setUsersCount(0);
+                              } else {
+                                 if(mounted) setUsersCount(Number(usersRes.count) || 0);
+                              }
+
+                              // Debug: mostrar resultados en consola para diagnóstico
+                              console.debug('Dashboard counts:', { users: usersRes.count, jugadores: jugadoresRes.count, ligas: ligasRes.count });
+
                       }catch(err){
                               console.error('Error fetching counts', err);
                               if(mounted){ setUsersCount(0); setJugadoresCount(0); setLigasCount(0); }

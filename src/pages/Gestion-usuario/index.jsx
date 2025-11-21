@@ -7,72 +7,104 @@ import { supabase } from '../../database/supabase.jsx';
 function Gestion_usuario () {
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({ nombre: '', email: '', role: 'Admin' });
-    const [users, setUsers] = useState([
-      { id: 1, nombre: 'Admin Demo', email: 'admin@demo.com', role: 'Admin', activo: true }
-    ]);
+    const [users, setUsers] = useState([]);
     const [roleColumn, setRoleColumn] = useState('role');
+    const [usersTable, setUsersTable] = useState('usuarios');
     const [notification, setNotification] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [deleteCandidate, setDeleteCandidate] = useState(null);
 
-    const fetchUsers = async () => {
-      try {
-        // La tabla 'usuarios' solo maneja nombre, rol y email.
-        const col = roleColumn || 'role';
-        // aliasamos la columna a 'role' para simplificar el mapeo
-        const selectStr = `id, nombre, email, ${col} as role`;
-        const { data, error } = await supabase
-          .from('usuarios')
-          .select(selectStr)
-          .order('id', { ascending: false });
-        if (error) {
-          console.error('Error al cargar usuarios:', error);
-          return;
+    const fetchUsers = async (tableParam, colParam) => {
+      // Intentamos la tabla indicada y, si falla, reintentamos con la otra ('usuarios' <-> 'users')
+      const preferred = tableParam || usersTable || 'usuarios';
+      const fallback = preferred === 'usuarios' ? 'users' : 'usuarios';
+      const tablesToTry = [preferred, fallback];
+      let lastError = null;
+      let resultData = null;
+      let usedTable = preferred;
+
+      let usedCol = colParam || roleColumn || 'role';
+      for (const table of tablesToTry) {
+        try {
+          const col = colParam || roleColumn || 'role';
+          // PostgREST/select via Supabase no admite alias con 'AS' en la query string.
+          // Seleccionamos la columna directamente y mapearemos usando su nombre real.
+          const selectStr = `id,nombre,email,${col}`;
+          const res = await supabase.from(table).select(selectStr).order('id', { ascending: false });
+          if (res.error) {
+            lastError = res.error;
+            console.warn('fetchUsers intento fallido desde', table, res.error);
+            continue;
+          }
+          resultData = res.data || [];
+          usedTable = table;
+          usedCol = col;
+          // guardar la tabla que sí funcionó
+          setUsersTable(table);
+          break;
+        } catch (err) {
+          lastError = err;
+          console.warn('fetchUsers excepción desde', table, err);
         }
-        console.debug('fetchUsers result count:', data?.length, data?.slice(0,3));
-        // Mapear a la estructura que usa la UI (role en vez de rol). activo se añade solo para la vista.
-        const mapped = data.map(u => ({
-          id: u.id,
-          nombre: u.nombre,
-          email: u.email,
-          role: u.role || 'Usuario',
-          activo: true, // la BD no tiene esta columna; lo dejamos true para la UI
-          _raw: u
-        }));
-        setUsers(mapped);
-      } catch (err) {
-        console.error('FetchUsers error:', err);
       }
+
+      if (!resultData) {
+        console.error('Error al cargar usuarios desde', tablesToTry.join(', '), ':', lastError);
+        const message = lastError?.message || (typeof lastError === 'object' ? JSON.stringify(lastError) : String(lastError));
+        // No vaciar la lista local en caso de error para no perder usuarios creados en la sesión
+        showNotification('Error al cargar usuarios: ' + (message || 'sin detalles'), 'error');
+        return;
+      }
+
+      console.debug('fetchUsers result count:', resultData.length, resultData.slice(0,3));
+      // Mapear a la estructura que usa la UI (role en vez de rol). activo se añade solo para la vista.
+      const mapped = resultData.map(u => ({
+        id: u.id,
+        nombre: u.nombre,
+        email: u.email,
+        role: (u[usedCol] ?? u.role ?? u.rol) || 'Usuario',
+        activo: u.activo ?? true,
+        _raw: u
+      }));
+      setUsers(mapped);
     };
 
     // Detectar si la columna se llama 'role' o 'rol' y luego cargar usuarios
     const detectRoleColumn = async () => {
-      try {
-        const { error } = await supabase.from('usuarios').select('role').limit(1);
-        if (!error) {
-          setRoleColumn('role');
-          return 'role';
+      // Intentar detectar la tabla y la columna de rol en orden de preferencia
+      const tables = ['usuarios', 'users'];
+      for (const t of tables) {
+        try {
+          const { error } = await supabase.from(t).select('role').limit(1);
+          if (!error) {
+            setUsersTable(t);
+            setRoleColumn('role');
+            return { table: t, col: 'role' };
+          }
+        } catch (e) {
+          // ignore
         }
-      } catch (e) {
-        // sigue al siguiente intento
-      }
-      try {
-        const { error } = await supabase.from('usuarios').select('rol').limit(1);
-        if (!error) {
-          setRoleColumn('rol');
-          return 'rol';
+        try {
+          const { error } = await supabase.from(t).select('rol').limit(1);
+          if (!error) {
+            setUsersTable(t);
+            setRoleColumn('rol');
+            return { table: t, col: 'rol' };
+          }
+        } catch (e) {
+          // ignore
         }
-      } catch (e) {
-        // no existe ninguna, dejar role por defecto
       }
+      // fallback
+      setUsersTable('usuarios');
       setRoleColumn('role');
-      return 'role';
+      return { table: 'usuarios', col: 'role' };
     };
 
     useEffect(() => {
       (async () => {
-        await detectRoleColumn();
-        await fetchUsers();
+        const detected = await detectRoleColumn();
+        await fetchUsers(detected.table, detected.col);
       })();
     }, []);
 
@@ -109,7 +141,7 @@ function Gestion_usuario () {
         if (editingId) {
           const payload = { nombre: form.nombre, email: form.email, [roleColumn]: form.role };
           const { data: updatedData, error } = await supabase
-            .from('usuarios')
+            .from(usersTable)
             .update(payload)
             .eq('id', editingId)
             .select();
@@ -135,7 +167,7 @@ function Gestion_usuario () {
           // Insertar usando solo las columnas existentes: nombre, email, rol
           const payload = { nombre: form.nombre, email: form.email, [roleColumn]: form.role };
           const { data: insertedData, error } = await supabase
-            .from('usuarios')
+            .from(usersTable)
             .insert([payload])
             .select();
           if (error) {
@@ -163,12 +195,12 @@ function Gestion_usuario () {
 
       setShowModal(false);
       setEditingId(null);
-      fetchUsers(); // recargar desde BD
+      fetchUsers(usersTable, roleColumn); // recargar desde BD
     };
 
     const handleDeleteConfirmed = async (id) => {
       try {
-        const { data: deletedData, error } = await supabase.from('usuarios').delete().eq('id', id).select();
+        const { data: deletedData, error } = await supabase.from(usersTable).delete().eq('id', id).select();
         if (error) {
           console.error('Error al eliminar:', error);
           showNotification('Error al eliminar usuario: ' + (error.message || JSON.stringify(error)), 'error');
@@ -182,7 +214,7 @@ function Gestion_usuario () {
         console.error('handleDeleteConfirmed error:', err);
       }
       setDeleteCandidate(null);
-      fetchUsers();
+      fetchUsers(usersTable, roleColumn);
     };
 
     const handleDelete = (user) => {
